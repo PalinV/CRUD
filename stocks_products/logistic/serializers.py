@@ -26,7 +26,6 @@ class StockSerializer(serializers.ModelSerializer):
         positions = validated_data.pop('positions')
         stock = super().create(validated_data)
         for position in positions:
-            print(f'Печать id product - "{position["product"].id}"')
             StockProduct(quantity=position["quantity"], price=position["price"],
                          stock_id=stock.pk, product_id=position["product"].id).save()
         return stock
@@ -35,9 +34,7 @@ class StockSerializer(serializers.ModelSerializer):
         positions = validated_data.pop('positions')
         stock = super().update(instance, validated_data)
         for position in positions:
-            StockProduct.objects.filter(stock_id=stock.pk, product_id=position["product"].id)\
-                .update(
-                quantity=position["quantity"], price=position["price"],
-                )
+            StockProduct.objects.update_or_create(stock_id=stock.pk, product_id=position["product"].id),
+            defaults={'quantity': position["quantity"], 'price': position["price"]}
         return stock
 
